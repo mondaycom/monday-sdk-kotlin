@@ -1,0 +1,27 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.70'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.3.70'
+}
+
+group 'com.monday'
+version '1.0'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+ext.ktor_version = '1.3.2'
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation("com.squareup.okhttp3:okhttp:4.4.0")
+    implementation 'com.google.code.gson:gson:2.8.6'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
