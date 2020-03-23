@@ -5,10 +5,9 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.monday.Constants.Companion.MONDAY_API_URL
-import com.monday.helpers.SingletonHolder
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.IOException
 
 class MondayApiClient private constructor() {
     private val client = OkHttpClient()
@@ -16,6 +15,7 @@ class MondayApiClient private constructor() {
 
 
     companion object {
+        @JvmStatic
         val instance: MondayApiClient by lazy {
             MondayApiClient()
         }
