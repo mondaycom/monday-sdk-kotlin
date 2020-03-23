@@ -1,7 +1,11 @@
 package com.monday.api
 
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.annotations.SerializedName
 import com.monday.Constants.Companion.MONDAY_API_URL
+import com.monday.helpers.SingletonHolder
 import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
@@ -10,14 +14,10 @@ class MondayApiClient private constructor() {
     private val client = OkHttpClient()
     private val gson = Gson()
 
-    companion object {
-        private var instance: MondayApiClient? = null
-        fun getInstance(): MondayApiClient {
-            if (instance == null) {
-                instance = MondayApiClient()
-            }
 
-            return instance!!
+    companion object {
+        val instance: MondayApiClient by lazy {
+            MondayApiClient()
         }
 
         private const val COULD_NOT_PARSE_JSON_RESPONSE_ERROR =
@@ -25,7 +25,7 @@ class MondayApiClient private constructor() {
         private const val TOKEN_IS_REQUIRED_ERROR = "Token is required";
     }
 
-    fun execute(data: Map<String, String>, token: String?, options: Map<String, String> = emptyMap()): Response {
+    fun execute(data: Map<String, String>, token: String?, options: Map<String, String> = emptyMap()): MondayApiResponse {
         if (token.isNullOrEmpty()) {
             throw Exception(TOKEN_IS_REQUIRED_ERROR)
         }
@@ -36,7 +36,7 @@ class MondayApiClient private constructor() {
         return apiRequest(fullUrl, data, token, options)
     }
 
-    private fun apiRequest(url: String, data: Map<String, String>, token: String, options: Map<String, String>): Response {
+    private fun apiRequest(url: String, data: Map<String, String>, token: String, options: Map<String, String>): MondayApiResponse {
         val body = gson.toJson(data)
         val request = Request.Builder()
             .url(url)
@@ -45,6 +45,24 @@ class MondayApiClient private constructor() {
             .method(options["method"]?: "POST", body.toRequestBody())
             .build()
 
-        return client.newCall(request).execute()
+        val response = client.newCall(request).execute()
+
+        return if (response.isSuccessful) {
+            gson.fromJson<MondayApiResponse>(response.body!!.string(), MondayApiResponse::class.java)
+        } else {
+            MondayApiResponse(
+                data = null,
+                errors = JsonObject().apply {
+                    addProperty("message", COULD_NOT_PARSE_JSON_RESPONSE_ERROR)
+                }
+            )
+        }
     }
 }
+
+data class MondayApiResponse(
+    @SerializedName("data")
+    val data: JsonElement?,
+    @SerializedName("errors")
+    val errors: JsonElement?
+)

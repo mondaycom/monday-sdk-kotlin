@@ -1,25 +1,16 @@
 package com.monday
 
 import com.monday.api.MondayApiClient
-import okhttp3.Response
+import com.monday.api.MondayApiResponse
+import com.monday.helpers.SingletonHolder
 
 class MondaySDK private constructor(options: Map<String, String>) {
-    private val mondayApiClient = MondayApiClient.getInstance()
+    private val mondayApiClient = MondayApiClient.instance
     private var token = options["token"]
 
-    companion object {
-        private var instance: MondaySDK? = null
-        fun getInstance(options: Map<String, String> = emptyMap()): MondaySDK {
-            if (instance == null) {
-                instance =
-                    MondaySDK(options)
-            }
+    companion object : SingletonHolder<MondaySDK, Map<String,String>>(::MondaySDK)
 
-            return instance!!
-        }
-    }
-
-    fun api(query: String, options: Map<String, String> = emptyMap()): Response {
+    fun api(query: String, options: Map<String, String> = emptyMap()): MondayApiResponse {
         val params = mapOf(
             "query" to query,
             "variables" to options["variables"].orEmpty()

@@ -1,7 +1,9 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.70'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.3.70'
+    id("maven-publish")
 }
+
 
 group 'com.monday'
 version '1.0'
@@ -24,4 +26,23 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+publishing {
+    repositories {
+        maven {
+            name = "monday-sdk-kotlin"
+            url = uri("https://maven.pkg.github.com/mondaycom/monday-sdk-kotlin")
+            credentials {
+                username = githubProperties["gpr.user"] ?: System.getenv("USERNAME")
+                password = githubProperties["gpr.key"] ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
 }
